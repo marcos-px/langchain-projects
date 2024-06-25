@@ -23,24 +23,31 @@ modelId = os.getenv("MODEL_ID")
 accept = 'application/json'
 contentType = 'application/json'
 
-def generate_company_name_ia(SystemPrompt, UserPrompt):
+def generate_company_name_ia(system_prompt, user_prompt):
+    
+    system_message = SystemMessage(content=system_prompt)
+    user_message = HumanMessage(content=user_prompt)
+    
+    final_prompt = f"{system_message.content}\n{user_message.content}"
+    
     response = client.invoke_model(
         modelId=modelId,
         body=json.dumps({
-            "prompt": SystemPrompt + UserPrompt,
+            "prompt": final_prompt,
             "maxTokens": 100,
             "stopSequences": [],
             "temperature": 0.7
-            }),
+        }),
         accept=accept,
-        contentType=contentType,
+        contentType=contentType
     )
+    
     response_body = response['body'].read()
     return json.loads(response_body)
 
-
 if __name__ == "__main__":
-    company_name = generate_company_name_ia(
-        "Você é um assistente que responde tudo em português brasileiro", "Gere 1 função extra para advogados"
-    )
-    print(company_name)
+    system_prompt = "Você é um assistente IA que sempre responde em Português do Brasil."
+    user_prompt = "Diga uma função extra para um advogado Júnior numa empresa."
+
+    company_name_response = generate_company_name_ia(system_prompt, user_prompt)
+    print(company_name_response)
